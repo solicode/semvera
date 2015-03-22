@@ -38,13 +38,15 @@ Now let's try a few things in the REPL:
 
 ; Create a semver with pre-release and build info
 (semver "2.0.0-alpha+340")
-;=> #semvera.core.SemVer{:major 2, :minor 0, :patch 0, :pre-release "alpha", :build "340"}
+;=> #semvera.core.SemVer{:major 2, :minor 0, :patch 0, :pre-release "alpha",
+; :build "340"}
 
 ; Compare semvers
 (<' (semver "0.1.0") (semver "0.2.0"))
 ;=> true
 
-; Or pass in more than 2 parameters. These comparison operators work much like the core operators do for numbers.
+; Or pass in more than 2 parameters. These comparison operators work much like
+; the core operators do for numbers.
 (<' (semver "0.1.0") (semver "0.2.0") (semver "0.3.0"))
 ;=> true
 
