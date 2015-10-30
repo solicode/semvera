@@ -1,4 +1,4 @@
-Semvera
+Semvera [![Circle CI](https://circleci.com/gh/solicode/semvera.svg?style=svg)](https://circleci.com/gh/solicode/semvera)
 =======
 
 Semvera is a semantic version parser with range syntax support based on [node-semver](https://github.com/npm/node-semver).
