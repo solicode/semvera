@@ -1,6 +1,12 @@
-(ns semvera.core-test
-  (:require [clojure.test :refer :all]
-            [semvera.core :refer :all]))
+(ns semvera.test.core
+  #?(:clj
+     (:require [semvera.core :as sv :refer [semver semver-range in-range? >' <' =' not=']]
+               [clojure.test :as t :refer [deftest is are testing]]
+               [semvera.test.macros :refer [exception-thrown?]])
+     :cljs
+     (:require [semvera.core :as sv :refer [semver semver-range in-range? >' <' =' not=']]
+               [cljs.test :as t :refer-macros [deftest is are testing]]
+               [semvera.test.macros :refer-macros [exception-thrown?]])))
 
 (defn- greater-than? [x y]
   (let [x-semver (semver x)
@@ -413,7 +419,7 @@
     ""))
 
 (deftest semver-throws-exceptions-when-enabled
-  (are [x] (thrown? Exception (semver x :throw-exceptions true))
+  (are [x] (exception-thrown? (semver x :throw-exceptions true))
     ""
     "1"
     "abc"))
@@ -436,7 +442,7 @@
     "???"))
 
 (deftest semver-range-throws-exceptions-when-enabled
-  (are [x] (thrown? Exception (semver-range x :throw-exceptions true))
+  (are [x] (exception-thrown? (semver-range x :throw-exceptions true))
     "invalid"
     "10.20.30.40"
     "alpha+500"))

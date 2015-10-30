@@ -3,6 +3,8 @@ Semvera
 
 Semvera is a semantic version parser with range syntax support based on [node-semver](https://github.com/npm/node-semver).
 
+*(Supports Clojure and ClojureScript)*
+
 Overview
 --------
 

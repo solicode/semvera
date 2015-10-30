@@ -1,10 +1,15 @@
 (ns semvera.core
-  (:require [clojure.string :as s]
-            [semvera.util :refer :all]))
+  (:require
+    #?(:clj [semvera.util :as u :refer [compare-chain]])
+    #?(:cljs [semvera.util :as u :refer-macros [compare-chain]])
+    #?(:clj [semvera.macros :refer [minify-regex]])
+    #?(:cljs [semvera.macros :refer-macros [minify-regex]])
+             [clojure.string :as s])
+  #?(:clj (:import [java.util.regex Pattern])))
 
 (defn- compare-ids [x y]
-  (let [x-num (parse-natural-number x)
-        y-num (parse-natural-number y)]
+  (let [x-num (u/parse-natural-number x)
+        y-num (u/parse-natural-number y)]
     ; Numeric indentifier are considered 'less than' alphanumeric ones. And if they are the same type,
     ; then order them naturally (using the default comparators).
     (compare-chain
@@ -22,8 +27,8 @@
       (compare (count x-ids) (count y-ids)))))
 
 (defrecord SemVer [major minor patch pre-release build]
-  Comparable
-  (compareTo [_ other]
+  #?(:clj Comparable :cljs IComparable)
+  (#?(:clj compareTo :cljs -compare) [_ other]
     (compare-chain
       (compare major (:major other))
       (compare minor (:minor other))
@@ -50,7 +55,7 @@
       "*"
       (s/join " || " (map #(s/join " " %) constraint-groups)))))
 
-(def semver-pattern #"(?x)
+(def semver-pattern (u/regex (minify-regex #"
 \s*
 v?=?                                        # Allow `v` and `=` prefixes, though they will be ignored.
 \s*
@@ -60,11 +65,11 @@ v?=?                                        # Allow `v` and `=` prefixes, though
 (?:-?([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?  ## Pre-release
 (?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?  ## Build
 \s*
-")
+")))
 
 ; Note: At least one space between hyphen for range required (otherwise it would be
 ; amibiguous, since pre-release is also separated with a hyphen)
-(def semver-range-pattern #"(?x)
+(def semver-range-pattern (u/regex (minify-regex #"
 \s*
 (~|~>|\^|<|<=|>|>=|=)?                      ## Operation
 \s*
@@ -85,7 +90,7 @@ v?                                          # Allow `v` in range, but it will be
 (?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?  ## Build
 )?
 \s*
-")
+")))
 
 ;; Default comparators in core only work on numbers, so here are their comparator equivalents:
 
@@ -159,7 +164,7 @@ v?                                          # Allow `v` in range, but it will be
   [s]
   (every? boolean
     (for [group (s/split s #"\|\|" -1)]
-      (re-linked semver-range-pattern group))))
+      (u/re-linked semver-range-pattern group))))
 
 (defn semver
   "Creates a `SemVer` record from a string. Returns `nil` if the input is invalid, unless `:throws-exception` is
@@ -168,17 +173,17 @@ v?                                          # Allow `v` in range, but it will be
   (let [[matched? major minor patch pre-release build] (re-matches semver-pattern s)]
     (if matched?
       (->SemVer
-        (parse-natural-number major)
-        (parse-natural-number minor)
-        (parse-natural-number patch)
+        (u/parse-natural-number major)
+        (u/parse-natural-number minor)
+        (u/parse-natural-number patch)
         pre-release
         build)
-      (when throw-exceptions (throw (IllegalArgumentException. (str "'" s "' is not a valid semantic version.")))))))
+      (when throw-exceptions (u/throw-illegal-argument-exception (str "'" s "' is not a valid semantic version."))))))
 
 (defn- part->num [part]
   (case part
     ("x" "X" "*" nil) 0
-    (parse-natural-number part)))
+    (u/parse-natural-number part)))
 
 (defn- x-range? [part]
   (case part
@@ -241,7 +246,7 @@ v?                                          # Allow `v` in range, but it will be
 
 (defn- str->constraint-groups [s]
   (for [group (s/split s #"\|\|" -1)
-        :let [ranges (re-linked semver-range-pattern group)]]
+        :let [ranges (u/re-linked semver-range-pattern group)]]
     (if-not ranges
       :invalid-range
       (flatten
@@ -320,5 +325,5 @@ v?                                          # Allow `v` in range, but it will be
   [s & {:keys [throw-exceptions] :as opts}]
   (let [constraint-groups (str->constraint-groups s)]
     (if (some #(= % :invalid-range) constraint-groups)
-      (when throw-exceptions (throw (IllegalArgumentException. (str "'" s "' is not a valid semantic version range."))))
+      (when throw-exceptions (u/throw-illegal-argument-exception (str "'" s "' is not a valid semantic version range.")))
       (->SemVerRange constraint-groups))))
