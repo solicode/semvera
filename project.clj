@@ -1,4 +1,4 @@
-(defproject net.solicode/semvera "0.1.0-SNAPSHOT"
+(defproject net.solicode/semvera "0.1.0"
   :description "Semvera is a semantic version parser with npm-like range syntax support."
   :url "https://github.com/solicode/semvera"
   :license {:name "Eclipse Public License"

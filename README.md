@@ -20,7 +20,7 @@ Getting Started
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[net.solicode/semvera "0.1.0-SNAPSHOT"]
+[net.solicode/semvera "0.1.0"]
 ```
 
 ### Examples
